@@ -1,0 +1,14 @@
+{
+    "name": "jdbc-sink",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "tasks.max": "1",
+        "topics": "influencers",
+	    "table.name.format": "influencer",
+        "connection.url": "jdbc:postgresql://postgresql:5432/influencers?user=user&password=1234",
+        "auto.create": "true",                                                   
+        "insert.mode": "upsert",                                                 
+        "pk.fields": "username",                                                       
+        "pk.mode": "record_key"                                                
+    }
+}
