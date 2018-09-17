@@ -86,5 +86,3 @@ services:
       POSTGRES_DB: influencers
       POSTGRES_USER: user
       POSTGRES_PASSWORD: 1234
-#    volumes:
-#    - ./mysql/custom.cnf:/etc/mysql/conf.d/custom.cnf

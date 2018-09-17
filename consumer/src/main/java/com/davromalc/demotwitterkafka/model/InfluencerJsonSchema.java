@@ -48,7 +48,6 @@ public class InfluencerJsonSchema {
 	@Getter
 	@Setter
 	@Builder
-	@AllArgsConstructor
 	static class Field {
 
 		String type;

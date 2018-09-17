@@ -11,8 +11,10 @@ import reactor.core.publisher.Flux
 @Service
 class InfluencerHandler (val influencerRepository: InfluencerRepository) {
 
-    fun findAll(request: ServerRequest) = ok().body(Flux.fromIterable(influencerRepository.findAll()))
+    fun getTotalTweets(request: ServerRequest) = ok().syncBody(influencerRepository.findTotalTweets())
 
     fun getRanking(request: ServerRequest) = ok().body(Flux.fromIterable(influencerRepository.findTop10ByOrderByLikesDesc()))
+
+    fun getMoreActive(request: ServerRequest) = ok().body(Flux.fromIterable(influencerRepository.findTop10ByOrderByTweetsDesc()))
 
 }
