@@ -55,6 +55,7 @@
 	<modules>
 		<module>consumer</module>
 		<module>producer</module>
+		<module>reader</module>
 	</modules>
 
 	<build>
