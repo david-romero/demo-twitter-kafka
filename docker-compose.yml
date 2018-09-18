@@ -38,42 +38,6 @@ services:
       timeout: 5s
       retries: 3
 
-  connect:
-    image: confluentinc/cp-kafka-connect
-    container_name: kafka-connect
-    network_mode: host
-    ports:
-      - "8083:8083"
-    depends_on:
-      - zookeeper
-      - kafka
-    volumes:
-      - $PWD/connect-plugins:/etc/kafka-connect/jars
-    environment:
-      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
-      CONNECT_REST_PORT: 8083
-      CONNECT_REST_ADVERTISED_HOST_NAME: "connect"
-      CONNECT_GROUP_ID: quickstart
-      CONNECT_ZOOKEEPER_CONNECT: zookeeper:2181
-      CONNECT_CONFIG_STORAGE_TOPIC: quickstart-config
-      CONNECT_OFFSET_STORAGE_TOPIC: quickstart-offsets
-      CONNECT_STATUS_STORAGE_TOPIC: quickstart-status
-      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1 
-      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1 
-      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1 
-      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
-      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: "http://localhost:8081"
-      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: "http://localhost:8081"
-      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
-      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/jars
-    healthcheck:
-      test: "curl --silent -f --header 'Content-Type: application/json' --request GET http://localhost:8083/connectors || exit 1"
-      interval: 300s
-      timeout: 30s
-      retries: 3
-
 
   db:
     container_name: postgresql

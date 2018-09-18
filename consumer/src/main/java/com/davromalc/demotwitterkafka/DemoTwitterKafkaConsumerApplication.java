@@ -21,7 +21,6 @@ import org.springframework.kafka.annotation.EnableKafkaStreams;
 import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
 import org.springframework.kafka.support.serializer.JsonSerde;
 
-import com.davromalc.demotwitterkafka.model.InfluencerJsonSchema;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -41,6 +40,7 @@ public class DemoTwitterKafkaConsumerApplication {
 	@EnableKafkaStreams
 	static class KafkaConsumerConfiguration {
 		
+		private static final String DELIMITER = "::::";
 		final Serde<Influencer> jsonSerde = new JsonSerde<>(Influencer.class);
 		final Materialized<String, Influencer, KeyValueStore<Bytes, byte[]>> materialized = Materialized.<String, Influencer, KeyValueStore<Bytes, byte[]>>as("aggreation-tweets-by-likes").withValueSerde(jsonSerde);
 		
@@ -48,20 +48,19 @@ public class DemoTwitterKafkaConsumerApplication {
 		KStream<String, String> stream(StreamsBuilder streamBuilder){
 			final KStream<String, String> stream = streamBuilder.stream("tweets");
 			stream
-				.selectKey(( key , value ) -> String.valueOf(value.split("::::")[0]))
+				.selectKey(( key , value ) -> String.valueOf(value.split(DELIMITER)[0]))
 				.groupByKey()
 				.aggregate(Influencer::init, this::aggregateInfoToInfluencer, materialized)
-				.mapValues(InfluencerJsonSchema::new)
 				.toStream()
-				.peek( (username, jsonSchema) -> log.info("Sending a new tweet from user: {}", username))
-				.to("influencers", Produced.with(Serdes.String(), new JsonSerde<>(InfluencerJsonSchema.class)));
+				.peek( (username, influencer) -> log.info("Sending a new tweet from user: {}", username))
+				.to("influencers", Produced.with(Serdes.String(), new JsonSerde<>(Influencer.class)));
 			return stream;
 		}
 		
 		private Influencer aggregateInfoToInfluencer(String username, String tweet, Influencer influencer) {
-			final long likes = Long.valueOf(tweet.split("::::")[2]);
+			final long likes = Long.valueOf(tweet.split(DELIMITER)[2]);
 			if ( likes >= influencer.getLikes() ) {
-				return new Influencer(influencer.getTweets()+1, username, String.valueOf(tweet.split("::::")[1]), likes);
+				return new Influencer(influencer.getTweets()+1, username, String.valueOf(tweet.split(DELIMITER)[1]), likes);
 			} else {
 				return new Influencer(influencer.getTweets()+1, username, influencer.getContent(), influencer.getLikes());
 			}
