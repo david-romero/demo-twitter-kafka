@@ -12,12 +12,6 @@ services:
       - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    healthcheck:
-      test: ["CMD-SHELL", "echo ruok | nc -w 2 localhost 2181"]
-      interval: 45s
-      timeout: 10s
-      retries: 3
 
   kafka:
     image: confluentinc/cp-kafka
@@ -28,15 +22,9 @@ services:
     ports:
       - "9092:9092"  
     environment:
-      KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: localhost:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --list --zookeeper localhost:2181 || exit 1" ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # We have only 1 broker, so offsets topic can only have one replication factor.
 
   connect:
     image: confluentinc/cp-kafka-connect
@@ -51,30 +39,25 @@ services:
       - $PWD/connect-plugins:/etc/kafka-connect/jars
     environment:
       CONNECT_BOOTSTRAP_SERVERS: kafka:9092
-      CONNECT_REST_PORT: 8083
-      CONNECT_REST_ADVERTISED_HOST_NAME: "connect"
-      CONNECT_GROUP_ID: quickstart
+      CONNECT_REST_PORT: 8083 # Kafka connect creates an endpoint in order to add connectors
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
+      CONNECT_GROUP_ID: kafka-connect
       CONNECT_ZOOKEEPER_CONNECT: zookeeper:2181
-      CONNECT_CONFIG_STORAGE_TOPIC: quickstart-config
-      CONNECT_OFFSET_STORAGE_TOPIC: quickstart-offsets
-      CONNECT_STATUS_STORAGE_TOPIC: quickstart-status
-      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1 
+      CONNECT_CONFIG_STORAGE_TOPIC: kafka-connect-config
+      CONNECT_OFFSET_STORAGE_TOPIC: kafka-connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: kafka-connect-status
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1 # We have only 1 broker, so we can only have 1 replication factor.
       CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1 
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1 
-      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter" # We receive a string as key and a json as value
       CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: "http://localhost:8081"
-      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: "http://localhost:8081"
       CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/jars
-    healthcheck:
-      test: "curl --silent -f --header 'Content-Type: application/json' --request GET http://localhost:8083/connectors || exit 1"
-      interval: 300s
-      timeout: 30s
-      retries: 3
 
-
+  #############
+  # PostgreSQL
+  #############
   db:
     container_name: postgresql
     network_mode: host
