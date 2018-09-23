@@ -8,7 +8,6 @@ import com.davromalc.demotwitterkafka.DemoTwitterKafkaConsumerApplication.Influe
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * https://gist.github.com/rmoff/2b922fd1f9baf3ba1d66b98e9dd7b364
@@ -35,7 +34,6 @@ public class InfluencerJsonSchema {
 	}
 
 	@Getter
-	@Setter
 	@AllArgsConstructor
 	static class Schema {
 
@@ -46,7 +44,6 @@ public class InfluencerJsonSchema {
 	}
 
 	@Getter
-	@Setter
 	@Builder
 	static class Field {
 
