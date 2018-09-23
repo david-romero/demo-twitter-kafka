@@ -21,7 +21,6 @@ import org.springframework.kafka.annotation.EnableKafkaStreams;
 import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
 import org.springframework.kafka.support.serializer.JsonSerde;
 
-import com.davromalc.demotwitterkafka.model.InfluencerJsonSchema;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -42,7 +41,7 @@ public class DemoTwitterKafkaConsumerApplication {
 	static class KafkaConsumerConfiguration {
 		
 		final Serde<Influencer> jsonSerde = new JsonSerde<>(Influencer.class);
-		final Materialized<String, Influencer, KeyValueStore<Bytes, byte[]>> materialized = Materialized.<String, Influencer, KeyValueStore<Bytes, byte[]>>as("aggreation-tweets-by-likes").withValueSerde(jsonSerde);
+		final Materialized<String, Influencer, KeyValueStore<Bytes, byte[]>> materialized = Materialized.<String, Influencer, KeyValueStore<Bytes, byte[]>>as("aggregation-tweets-by-likes").withValueSerde(jsonSerde);
 		
 		@Bean
 		KStream<String, String> stream(StreamsBuilder streamBuilder){
@@ -51,10 +50,9 @@ public class DemoTwitterKafkaConsumerApplication {
 				.selectKey(( key , value ) -> String.valueOf(value.split("::::")[0]))
 				.groupByKey()
 				.aggregate(Influencer::init, this::aggregateInfoToInfluencer, materialized)
-				.mapValues(InfluencerJsonSchema::new)
 				.toStream()
 				.peek( (username, jsonSchema) -> log.info("Sending a new tweet from user: {}", username))
-				.to("influencers", Produced.with(Serdes.String(), new JsonSerde<>(InfluencerJsonSchema.class)));
+				.to("influencers", Produced.with(Serdes.String(), jsonSerde));
 			return stream;
 		}
 		
