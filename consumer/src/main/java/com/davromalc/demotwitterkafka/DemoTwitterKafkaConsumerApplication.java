@@ -10,7 +10,6 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
-import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -26,10 +25,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @SpringBootApplication
-@Slf4j
 public class DemoTwitterKafkaConsumerApplication {
 
 	public static void main(String[] args) {
@@ -42,7 +39,7 @@ public class DemoTwitterKafkaConsumerApplication {
 		
 		private static final String DELIMITER = "::::";
 		final Serde<Influencer> jsonSerde = new JsonSerde<>(Influencer.class);
-		final Materialized<String, Influencer, KeyValueStore<Bytes, byte[]>> materialized = Materialized.<String, Influencer, KeyValueStore<Bytes, byte[]>>as("aggreation-tweets-by-likes").withValueSerde(jsonSerde);
+		final Materialized<String, Influencer, KeyValueStore<Bytes, byte[]>> materialized = Materialized.<String, Influencer, KeyValueStore<Bytes, byte[]>>as("aggregation-tweets-by-likes").withValueSerde(jsonSerde);
 		
 		@Bean
 		KStream<String, String> stream(StreamsBuilder streamBuilder){
@@ -50,10 +47,7 @@ public class DemoTwitterKafkaConsumerApplication {
 			stream
 				.selectKey(( key , value ) -> String.valueOf(value.split(DELIMITER)[0]))
 				.groupByKey()
-				.aggregate(Influencer::init, this::aggregateInfoToInfluencer, materialized)
-				.toStream()
-				.peek( (username, influencer) -> log.info("Sending a new tweet from user: {}", username))
-				.to("influencers", Produced.with(Serdes.String(), new JsonSerde<>(Influencer.class)));
+				.aggregate(Influencer::init, this::aggregateInfoToInfluencer, materialized);
 			return stream;
 		}
 		
