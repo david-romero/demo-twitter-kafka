@@ -42,7 +42,7 @@ public class DemoTwitterKafkaConsumerApplication {
 	static class KafkaConsumerConfiguration {
 		
 		final Serde<Influencer> jsonSerde = new JsonSerde<>(Influencer.class);
-		final Materialized<String, Influencer, KeyValueStore<Bytes, byte[]>> materialized = Materialized.<String, Influencer, KeyValueStore<Bytes, byte[]>>as("aggreation-tweets-by-likes").withValueSerde(jsonSerde);
+		final Materialized<String, Influencer, KeyValueStore<Bytes, byte[]>> materialized = Materialized.<String, Influencer, KeyValueStore<Bytes, byte[]>>as("aggregation-tweets-by-likes").withValueSerde(jsonSerde);
 		
 		@Bean
 		KStream<String, String> stream(StreamsBuilder streamBuilder){
