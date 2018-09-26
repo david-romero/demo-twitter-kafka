@@ -13,7 +13,7 @@ import java.util.*
 
 
 @SpringBootApplication
-class DemoTwitterKafkaMysqlApplication {
+class DemoTwitterKafkaPostgreSqlApplication {
 
     @Bean
     fun influencerRoute(handler: InfluencerHandler) = router {
@@ -39,5 +39,5 @@ class DemoTwitterKafkaMysqlApplication {
 }
 
 fun main(args: Array<String>) {
-    runApplication<DemoTwitterKafkaMysqlApplication>(*args)
+    runApplication<DemoTwitterKafkaPostgreSqlApplication>(*args)
 }
